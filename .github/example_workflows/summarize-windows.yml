@@ -1,0 +1,54 @@
+name: Summarize Repository (Windows Runner)
+
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+
+jobs:
+  summarize:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Python and dir-diary
+      uses: Promptly-Technologies-LLC/setup-dir-diary@v1
+      with:
+        install-python: 'true'
+
+    - name: Load OpenAI API Key from GitHub Secrets
+      run: echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
+
+    - name: Run dir-diary summarize command
+      run: summarize --startpath="./"
+
+    - name: Stage changes
+      run: git add -A
+
+    - name: Check for modified files
+      id: git-check
+      run: |
+        git diff-index --quiet HEAD -- 
+        if ($LASTEXITCODE -eq 0) {
+          echo "modified=false" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
+        } else {
+          echo "modified=true" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
+        }
+        $LASTEXITCODE = 0  # Reset exit code
+
+    - name: Pull latest changes
+      if: env.modified == 'true'
+      run: git pull origin main
+
+    - name: Commit and push if modified
+      if: env.modified == 'true'
+      run: |
+        git config --global user.name "GitHub Action"
+        git config --global user.email "action@github.com"
+        git commit -m "Automated modification"
+        git push
