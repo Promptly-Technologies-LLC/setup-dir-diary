@@ -54,12 +54,20 @@ describe('Setup dir-diary', () => {
     exec.exec.mockImplementationOnce(() => {
       throw new Error('Python not found');
     });
-
+  
     await run();
-
-    expect(exec.exec).toHaveBeenCalledWith('Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.11.0/python-3.11.0-amd64.exe" -OutFile "python-installer.exe"');
-    expect(exec.exec).toHaveBeenCalledWith('Start-Process -FilePath "python-installer.exe" -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1" -Wait');
-  });
+  
+    // Check only the relevant calls to exec.exec
+    const relevantCalls = exec.exec.mock.calls.filter(
+      (call) => !call[0].includes('python3.11 --version')
+    );
+  
+    expect(relevantCalls).toEqual([
+      ['pwsh -Command "Invoke-WebRequest -Uri \'https://www.python.org/ftp/python/3.11.0/python-3.11.0-amd64.exe\' -OutFile \'python-installer.exe\'"', [], { shell: '/bin/bash' }],
+      ['pwsh -Command "Start-Process -FilePath \'python-installer.exe\' -ArgumentList \'/quiet InstallAllUsers=1 PrependPath=1\' -Wait"', [], { shell: '/bin/bash' }],
+      ['pip install dir-diary']
+    ]);
+  });  
 
   it('Does not install Python on Windows when Python is already present', async () => {
     Object.defineProperty(process, 'platform', {
@@ -70,6 +78,7 @@ describe('Setup dir-diary', () => {
 
     await run();
 
+    // Update this line to match the new Windows installation command if you switch from PowerShell
     expect(exec.exec).not.toHaveBeenCalledWith('Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.11.0/python-3.11.0-amd64.exe" -OutFile "python-installer.exe"');
     expect(exec.exec).not.toHaveBeenCalledWith('Start-Process -FilePath "python-installer.exe" -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1" -Wait');
   });
