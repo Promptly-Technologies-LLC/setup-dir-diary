@@ -24,8 +24,8 @@ async function run() {
     if (installPython && !pythonExists) {
       if (isWindows) {
         // Mimic actions/setup-python for Windows
-        await exec.exec('Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.11.0/python-3.11.0-amd64.exe" -OutFile "python-installer.exe"');
-        await exec.exec('Start-Process -FilePath "python-installer.exe" -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1" -Wait');
+        await exec.exec('pwsh -Command "Invoke-WebRequest -Uri \'https://www.python.org/ftp/python/3.11.0/python-3.11.0-amd64.exe\' -OutFile \'python-installer.exe\'"', [], { shell: '/bin/bash' });
+        await exec.exec('pwsh -Command "Start-Process -FilePath \'python-installer.exe\' -ArgumentList \'/quiet InstallAllUsers=1 PrependPath=1\' -Wait"', [], { shell: '/bin/bash' });
       } else {
         // Mimic actions/setup-python for Ubuntu
         await exec.exec('sudo apt-get update');
