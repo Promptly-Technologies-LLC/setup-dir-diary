@@ -1,6 +1,6 @@
 {
   "name": "setup-dir-diary",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Setup Action for the dir-diary project summarization CLI tool",
   "main": "index.js",
   "scripts": {

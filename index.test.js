@@ -18,11 +18,14 @@ describe('Setup dir-diary', () => {
     Object.defineProperty(process, 'platform', originalPlatform);
   });
 
-  it('Installs Python on Ubuntu when install-python is true', async () => {
+  it('Installs Python on Ubuntu when install-python is true and Python is not present', async () => {
     Object.defineProperty(process, 'platform', {
       value: 'linux'
     });
     core.getInput.mockReturnValueOnce('true');
+    exec.exec.mockImplementationOnce(() => {
+      throw new Error('Python not found');
+    });
 
     await run();
 
@@ -30,15 +33,45 @@ describe('Setup dir-diary', () => {
     expect(exec.exec).toHaveBeenCalledWith('sudo apt-get install python3.11');
   });
 
-  it('Installs Python on Windows when install-python is true', async () => {
+  it('Does not install Python on Ubuntu when Python is already present', async () => {
+    Object.defineProperty(process, 'platform', {
+      value: 'linux'
+    });
+    core.getInput.mockReturnValueOnce('true');
+    exec.exec.mockImplementationOnce(() => Promise.resolve());
+
+    await run();
+
+    expect(exec.exec).not.toHaveBeenCalledWith('sudo apt-get update');
+    expect(exec.exec).not.toHaveBeenCalledWith('sudo apt-get install python3.11');
+  });
+
+  it('Installs Python on Windows when install-python is true and Python is not present', async () => {
     Object.defineProperty(process, 'platform', {
       value: 'win32'
     });
     core.getInput.mockReturnValueOnce('true');
+    exec.exec.mockImplementationOnce(() => {
+      throw new Error('Python not found');
+    });
 
     await run();
 
-    expect(exec.exec).toHaveBeenCalledWith('choco install python --version=3.11');
+    expect(exec.exec).toHaveBeenCalledWith('Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.11.0/python-3.11.0-amd64.exe" -OutFile "python-installer.exe"');
+    expect(exec.exec).toHaveBeenCalledWith('Start-Process -FilePath "python-installer.exe" -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1" -Wait');
+  });
+
+  it('Does not install Python on Windows when Python is already present', async () => {
+    Object.defineProperty(process, 'platform', {
+      value: 'win32'
+    });
+    core.getInput.mockReturnValueOnce('true');
+    exec.exec.mockImplementationOnce(() => Promise.resolve());
+
+    await run();
+
+    expect(exec.exec).not.toHaveBeenCalledWith('Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.11.0/python-3.11.0-amd64.exe" -OutFile "python-installer.exe"');
+    expect(exec.exec).not.toHaveBeenCalledWith('Start-Process -FilePath "python-installer.exe" -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1" -Wait');
   });
 
   it('Does not install Python when install-python is false', async () => {
