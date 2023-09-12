@@ -1,4 +1,4 @@
-name: Summarize Repository
+name: Summarize Repository (Linux Runner)
 
 on:
   workflow_dispatch:
