@@ -32,6 +32,11 @@ async function run() {
     await exec.exec(`${pipCommand} install dir-diary`);
   } catch (error) {
     core.setFailed(error.message);
+  } finally {
+    if (isWindows && installPython && !pythonExists) {
+      // Remove python-installer.exe if it exists, regardless of success or failure
+      await exec.exec('pwsh -Command "if (Test-Path \'python-installer.exe\') { Remove-Item -Path \'python-installer.exe\' }"', [], { shell: '/bin/bash' });
+    }
   }
 }
 
