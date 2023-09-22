@@ -46,7 +46,7 @@ describe('Setup dir-diary', () => {
     expect(exec.exec).not.toHaveBeenCalledWith('sudo apt-get install python3.11');
   });
 
-  it('Installs Python on Windows when install-python is true and Python is not present', async () => {
+  it('Installs Python on Windows and removes installer when install-python is true and Python is not present', async () => {
     Object.defineProperty(process, 'platform', {
       value: 'win32'
     });
@@ -65,9 +65,10 @@ describe('Setup dir-diary', () => {
     expect(relevantCalls).toEqual([
       ['pwsh -Command "Invoke-WebRequest -Uri \'https://www.python.org/ftp/python/3.11.0/python-3.11.0-amd64.exe\' -OutFile \'python-installer.exe\'"', [], { shell: '/bin/bash' }],
       ['pwsh -Command "Start-Process -FilePath \'python-installer.exe\' -ArgumentList \'/quiet InstallAllUsers=1 PrependPath=1\' -Wait"', [], { shell: '/bin/bash' }],
+      ['pwsh -Command "if (Test-Path \'python-installer.exe\') { Remove-Item -Path \'python-installer.exe\' }"', [], { shell: '/bin/bash' }],
       ['pip install dir-diary']
     ]);
-  });  
+  });
 
   it('Does not install Python on Windows when Python is already present', async () => {
     Object.defineProperty(process, 'platform', {
