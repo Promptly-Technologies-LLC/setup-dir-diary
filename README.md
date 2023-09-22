@@ -54,8 +54,6 @@ npm install
 
 Make changes on a development branch, run lint/build/test pipeline with `npm run all`. If all tests pass, open a pull request from `main`.
 
-If you open a PR and the dist check fails, it's probably because your dependencies weren't up to date when you ran the build. Do a `git pull`, run `npm install`, and then `npm run all` again. The check should pass on your next push.
-
 ### Create a release branch
 
 For maintainers only: to create a new major release branch, use:
