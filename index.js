@@ -2,10 +2,13 @@ const core = require('@actions/core');
 const exec = require('@actions/exec');
 
 async function run() {
+  let installPython = false;
+  let isWindows = false;
+  let pythonExists = false;
+
   try {
-    const installPython = core.getInput('install-python') === 'true';
-    const isWindows = process.platform === 'win32';
-    let pythonExists = false;
+    installPython = core.getInput('install-python') === 'true';
+    isWindows = process.platform === 'win32';
 
     // Check if Python 3.11 is already installed
     try {
@@ -34,7 +37,7 @@ async function run() {
     core.setFailed(error.message);
   } finally {
     if (isWindows && installPython && !pythonExists) {
-      // Remove python-installer.exe if it exists, regardless of success or failure
+      // Remove python-installer.exe if it exists
       await exec.exec('pwsh -Command "if (Test-Path \'python-installer.exe\') { Remove-Item -Path \'python-installer.exe\' }"', [], { shell: '/bin/bash' });
     }
   }

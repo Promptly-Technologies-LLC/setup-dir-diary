@@ -65,8 +65,8 @@ describe('Setup dir-diary', () => {
     expect(relevantCalls).toEqual([
       ['pwsh -Command "Invoke-WebRequest -Uri \'https://www.python.org/ftp/python/3.11.0/python-3.11.0-amd64.exe\' -OutFile \'python-installer.exe\'"', [], { shell: '/bin/bash' }],
       ['pwsh -Command "Start-Process -FilePath \'python-installer.exe\' -ArgumentList \'/quiet InstallAllUsers=1 PrependPath=1\' -Wait"', [], { shell: '/bin/bash' }],
-      ['pwsh -Command "if (Test-Path \'python-installer.exe\') { Remove-Item -Path \'python-installer.exe\' }"', [], { shell: '/bin/bash' }],
-      ['pip install dir-diary']
+      ['pip install dir-diary'],
+      ['pwsh -Command "if (Test-Path \'python-installer.exe\') { Remove-Item -Path \'python-installer.exe\' }"', [], { shell: '/bin/bash' }]
     ]);
   });
 

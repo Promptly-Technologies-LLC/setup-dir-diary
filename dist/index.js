@@ -8,10 +8,13 @@ const core = __nccwpck_require__(186);
 const exec = __nccwpck_require__(514);
 
 async function run() {
+  let installPython = false;
+  let isWindows = false;
+  let pythonExists = false;
+
   try {
-    const installPython = core.getInput('install-python') === 'true';
-    const isWindows = process.platform === 'win32';
-    let pythonExists = false;
+    installPython = core.getInput('install-python') === 'true';
+    isWindows = process.platform === 'win32';
 
     // Check if Python 3.11 is already installed
     try {
@@ -38,6 +41,11 @@ async function run() {
     await exec.exec(`${pipCommand} install dir-diary`);
   } catch (error) {
     core.setFailed(error.message);
+  } finally {
+    if (isWindows && installPython && !pythonExists) {
+      // Remove python-installer.exe if it exists
+      await exec.exec('pwsh -Command "if (Test-Path \'python-installer.exe\') { Remove-Item -Path \'python-installer.exe\' }"', [], { shell: '/bin/bash' });
+    }
   }
 }
 
